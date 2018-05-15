@@ -3,6 +3,31 @@ from Bio import SeqIO
 import regex
 import sys
 
+def prune_similar(seqs):
+	N = len(seqs)
+	lib = []
+	counter = 0
+	for x in seqs:
+		counter += 1
+		dont_add = False
+		for y in lib:
+			if test_similar(x.seq, y.seq):
+				dont_add = True
+		if not dont_add:
+			lib.append(x)
+		if int(N % N/100) == 0:
+			print(".", end="")
+	return lib
+
+def test_similar(x, y):
+	thresh = 20
+	score = 0
+	for i, letter in enumerate(x):
+		if y[i] != letter:
+			score += 1
+		if score > thresh:
+			return False
+	return True
 
 def compare_all_peptides(p1, p2, k, mismatches=0):
     """Compare all k-mers in sequences :p1 and :p2 with at most :mismatches"""
@@ -26,12 +51,12 @@ def build_matrix(proteins, k, mismatches=0):
     for i in range(len(proteins)):
         print("Protein # {} ".format(i + 1), end='', flush=True)
         for j in range(i + 1, len(proteins)):
-            print(".", end='', flush=True)
+            #print(".", end='', flush=True)
             cross_reactivity = compare_all_peptides(str(proteins[i].seq), str(proteins[j].seq), k,
                                                     mismatches=mismatches)
             overlap[i, j] = cross_reactivity
             overlap[j, i] = cross_reactivity
-        print(flush=True)
+        print(".", end="", flush=True)
     return overlap
 
 
